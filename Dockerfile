@@ -1,16 +1,26 @@
-FROM maven:3.9.4-eclipse-temurin-17 AS build
-WORKDIR /workspace
-COPY pom.xml ./
-COPY .mvn .mvn
-COPY mvnw mvnw
-RUN chmod +x mvnw || true
-RUN mvn -B -f pom.xml dependency:go-offline
-COPY src ./src
-RUN mvn -B clean package -DskipTests
+# 1. Use Maven image to build the app
+FROM maven:3.9.6-eclipse-temurin-17 AS build
 
-FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=build /workspace/target/*.jar app.jar
-ENV JAVA_OPTS=""
+
+# Copy pom.xml and download dependencies first (cache layer)
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+# Copy source code and build JAR
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+# 2. Use a smaller JDK image to run the app
+FROM eclipse-temurin:17-jdk-jammy
+
+WORKDIR /app
+
+# Copy only the built JAR file from the build stage
+COPY --from=build /app/target/*.jar app.jar
+
+# Expose port (matches application.properties server.port=8080)
 EXPOSE 8080
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
+
+# Run the Spring Boot app
+ENTRYPOINT ["java", "-jar", "app.jar"]
