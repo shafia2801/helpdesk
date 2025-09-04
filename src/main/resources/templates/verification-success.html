@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Email Verified Successfully</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #4caf50;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        h1 { font-size: 2rem; }
+        p { font-size: 1.2rem; margin-top: 1rem; }
+        a {
+            color: #fff;
+            text-decoration: underline;
+            margin-top: 2rem;
+            font-weight: bold;
+        }
+		/* For Tablets (up to 992px) */
+		       @media (max-width: 992px) {
+		           h1 {
+		               font-size: 2.2rem;
+		           }
+		           p {
+		               font-size: 1.1rem;
+		           }
+		       }
+
+		       /* For Mobile Phones (up to 768px) */
+		       @media (max-width: 768px) {
+		           h1 {
+		               font-size: 1.8rem;
+		           }
+		           p {
+		               font-size: 1rem;
+		           }
+		       }
+    </style>
+</head>
+<body>
+    <h1>Email Verified Successfully!</h1>
+    <p th:text="${message}">You can now login.</p>
+    <a th:href="@{/login}">Go to Login</a>
+</body>
+</html>

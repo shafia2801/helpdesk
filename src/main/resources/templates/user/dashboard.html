@@ -1,0 +1,267 @@
+<!-- user/dashboard.html -->
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>User Dashboard</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- External Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+	<style>
+	    /* ================================================================== */
+	    /* CSS VARIABLES & BASE STYLES
+	    /* ================================================================== */
+		:root {
+		    --navbar-bg: rgba(9, 62, 54, 0.85);            /* Dark teal translucent */
+		    --card-bg: rgba(15, 99, 93, 0.25);             /* Dark cyan translucent */
+		    --text-light: #d0f0e8;                         /* Light tealish text */
+		    --text-muted: #7dd3fc;                         /* Soft blue-muted text */
+		    --accent-color: #06b6d4;                       /* Cyan */
+		    --accent-hover: #22d3ee;                       /* Bright cyan */
+		    --border-color: rgba(3, 54, 48, 0.5);          /* Darker teal border */
+		    --shadow-md: 0 4px 6px -1px rgba(3, 54, 48, 0.3), 0 2px 4px -2px rgba(3, 54, 48, 0.2);
+		    --shadow-lg: 0 10px 15px -3px rgba(3, 54, 48, 0.25), 0 4px 6px -4px rgba(3, 54, 48, 0.15);
+		    --transition-speed: 0.3s;
+		    --transition-easing: ease-in-out;
+
+		    --status-open: #22c55e;
+		    --status-progress: #f97316;
+		    --status-closed: #ef4444;
+		}
+
+
+	  
+	    /* ================================================================== */
+	    /* NAVBAR STYLES (Modern & Classy)
+	    /* ================================================================== */
+	    .navbar { 
+	        background-color: var(--navbar-bg); 
+	        backdrop-filter: blur(10px);
+	        -webkit-backdrop-filter: blur(10px);
+	        padding: 0.75rem 2rem; 
+	        display: flex; 
+	        justify-content: space-between; 
+	        align-items: center; 
+	        position: sticky; 
+	        top: 0; 
+	        z-index: 1000; 
+	        border-bottom: 1px solid var(--border-color);
+	    }
+	    .navbar-brand { font-weight: 700; font-size: 1.25rem; color: var(--text-light); text-decoration: none; }
+	    .navbar-links { display: flex; align-items: center; gap: 0.5rem; }
+	    .navbar-links a { color: var(--text-muted); text-decoration: none; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 500; transition: all var(--transition-speed) var(--transition-easing); }
+	    .navbar-links a:hover { background-color: rgba(255, 255, 255, 0.1); color: var(--text-light); transform: translateY(-2px); }
+	    .navbar-links a.logout-link { border: 1px solid var(--accent-color); color: var(--accent-color); }
+	    .navbar-links a.logout-link:hover { background-color: var(--accent-color); color: var(--text-light); }
+	    .navbar-toggler { display: none; background: none; border: none; color: var(--text-light); cursor: pointer; padding: 0.5rem; font-size: 1.75rem; }
+
+	    /* ================================================================== */
+	    /* USER DASHBOARD STYLES
+	    /* ================================================================== */
+	    .page-container { padding: 2rem; }
+	    .page-header { text-align: center; margin-bottom: 2rem; font-size: 2.25rem; font-weight: 700; color: var(--text-light); }
+
+        /* KPI Card Section */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+        .kpi-card {
+            background: var(--card-bg);
+	        backdrop-filter: blur(10px);
+	        -webkit-backdrop-filter: blur(10px);
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+        }
+        .kpi-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-light);
+        }
+        .kpi-label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+	    .ticket-grid {
+	        display: grid;
+	        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+	        gap: 1.5rem;
+	    }
+
+	    .ticket-card {
+	        background: var(--card-bg);
+	        backdrop-filter: blur(10px);
+	        -webkit-backdrop-filter: blur(10px);
+	        border-radius: 16px;
+	        border: 1px solid var(--border-color);
+	        box-shadow: var(--shadow-md);
+	        display: flex;
+	        flex-direction: column;
+	        transition: transform var(--transition-speed) var(--transition-easing), 
+	                    box-shadow var(--transition-speed) var(--transition-easing);
+	    }
+	    .ticket-card:hover {
+	        transform: translateY(-8px);
+	        box-shadow: var(--shadow-lg);
+	    }
+
+	    .card-header, .card-body, .card-footer {
+	        padding: 1.5rem;
+	    }
+
+	    .card-header {
+	        border-bottom: 1px solid var(--border-color);
+	    }
+	    
+	    .card-title { font-size: 1.25rem; font-weight: 600; color: var(--text-light); margin: 0; }
+	    .card-subtitle { font-size: 0.9rem; font-weight: 500; color: var(--text-muted); }
+	    .card-body { flex-grow: 1; }
+        .card-body p { color: var(--text-muted); }
+        .card-body p strong { color: var(--text-light); }
+
+        /* Status Badge Styling */
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: white;
+        }
+        .status-open { background-color: var(--status-open); }
+        .status-in-progress { background-color: var(--status-progress); }
+        .status-closed { background-color: var(--status-closed); }
+        .status-resolved { background-color: var(--status-open); }
+        .status-escalated { background-color: var(--status-closed); }
+
+
+	    .btn-view {
+	        background-color: #0c4a57;
+	        color: #fff;
+	        border: none;
+	        padding: 0.6rem 1.2rem;
+	        border-radius: 8px;
+	        font-weight: 500;
+	        text-decoration: none;
+	        display: inline-block;
+	        text-align: center;
+	        transition: all var(--transition-speed) ease;
+	    }
+	    .btn-view:hover {
+	        background-color: var(--accent-hover);
+	        transform: translateY(-2px);
+	    }
+
+	    /* RESPONSIVE STYLES */
+		@media (max-width: 992px) {
+		    .navbar { 
+		        padding: 0.75rem 1rem; 
+		    }
+		    .navbar-toggler { 
+		        display: block; 
+		    }
+		    .navbar-links { 
+		        display: none; 
+		        position: absolute; 
+		        top: 100%; 
+		        left: 0; 
+		        width: 100%; 
+		        background-color: var(--navbar-bg); 
+		        backdrop-filter: blur(10px); 
+		        -webkit-backdrop-filter: blur(10px);
+		        flex-direction: column; 
+		        align-items: flex-start; 
+		        padding: 1rem; 
+		        border-top: 1px solid var(--border-color);
+		        box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+		    }
+		    .navbar-links.active { 
+		        display: flex; 
+		    }
+		    .navbar-links a { 
+		        width: 100%; 
+		        padding: 0.75rem 1rem; 
+		        box-sizing: border-box; 
+		    }
+		    .page-container { 
+		        padding: 1rem; 
+		    }
+		}
+		
+	    @media (max-width: 768px) {
+	        .navbar { padding: 0.75rem 1rem; }
+	        .navbar-toggler { display: block; }
+	        .navbar-links { 
+	            display: none; position: absolute; top: 100%; left: 0; width: 100%; 
+	            background-color: var(--navbar-bg); 
+	            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+	            flex-direction: column; align-items: flex-start; padding: 1rem; 
+	            border-top: 1px solid var(--border-color);
+	            box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+	        }
+	        .navbar-links.active { display: flex; }
+	        .navbar-links a { width: 100%; padding: 0.75rem 1rem; box-sizing: border-box; }
+	        .page-container { padding: 1rem; }
+	        .ticket-grid { grid-template-columns: 1fr; }
+	    }
+	</style>
+</head>
+<body>
+    <div th:replace="fragments/user-navbar.html"></div>
+	
+    <main class="page-container">
+        <h2 class="page-header">Your Dashboard</h2>
+
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-value" th:text="${#lists.size(tickets.?[status == 'Open'])}">0</div>
+                <div class="kpi-label">Open Tickets</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" th:text="${#lists.size(tickets.?[status == 'In Progress'])}">0</div>
+                <div class="kpi-label">In Progress</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-value" th:text="${#lists.size(tickets.?[status == 'Resolved'])}">0</div>
+                <div class="kpi-label">Resolved Tickets</div>
+            </div>
+        </div>
+
+        <div class="ticket-grid">
+            <div class="ticket-card" th:each="ticket : ${tickets}">
+                <div class="card-header">
+                    <h3 class="card-title" th:text="${ticket.title}"></h3>
+                    <p class="card-subtitle">
+                        #<span th:text="${ticket.id}"></span>
+                    </p>
+                </div>
+                <div class="card-body">
+                    <p><strong>Description:</strong> <span th:text="${ticket.description}"></span></p>
+                    <p><strong>Created:</strong> <span th:text="${#temporals.format(ticket.createdAt, 'dd-MM-yyyy HH:mm')}"></span></p>
+                    <p>
+                        <strong>Status:</strong>
+                        <span class="status-badge"
+                              th:classappend="${'status-' + #strings.toLowerCase(ticket.status).replace(' ','-')}"
+                              th:text="${ticket.status}">
+                        </span>
+                    </p>
+                </div>
+                <div class="card-footer text-end">
+                    <a th:href="@{/user/tickets/{id}(id=${ticket.id})}" class="btn-view">View Details</a>
+                </div>
+            </div>
+        </div>
+    </main>
+</body>
+</html>

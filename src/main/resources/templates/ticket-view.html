@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Comments</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- External Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+    <style>
+        /* ================================================================== */
+        /* CSS VARIABLES & BASE STYLES
+        /* ================================================================== */
+        :root {
+            --primary-bg: #f1f5f9;
+            --navbar-bg: #1e293b; 
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #2c3e50;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+            --transition-speed: 0.3s;
+            --transition-easing: cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ================================================================== */
+        /* NAVBAR STYLES
+        /* ================================================================== */
+        .navbar { background-color: var(--navbar-bg); padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-md); }
+        .navbar-brand { font-weight: 700; font-size: 1.25rem; color: #ffffff; }
+        .navbar-links { display: flex; align-items: center; gap: 0.5rem; }
+        .navbar-links a { color: #cbd5e1; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .navbar-links a:hover { background-color: #334155; color: #ffffff; }
+        .navbar-links a.logout-link { border: 1px solid var(--accent-color); color: var(--accent-color); }
+        .navbar-links a.logout-link:hover { background-color: var(--accent-color); color: #ffffff; }
+        .navbar-toggler { display: none; background: none; border: none; color: #ffffff; cursor: pointer; padding: 0.5rem; }
+
+        /* ================================================================== */
+        /* COMMENTS PAGE STYLES
+        /* ================================================================== */
+        .page-container { padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; font-size: 2rem; font-weight: 700; color: var(--text-primary); }
+
+        /* FILTER TOOLBAR */
+        .filter-toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+        #idFilterInput {
+            flex-grow: 1;
+        }
+
+        .ticket-card {
+            background: var(--card-bg);
+          
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            transition: transform var(--transition-speed) var(--transition-easing), 
+                        box-shadow var(--transition-speed) var(--transition-easing),
+                        border-color var(--transition-speed) var(--transition-easing);
+        }
+        .ticket-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border-color: var(--accent-color);
+        }
+
+        .card-header, .card-body, .card-footer {
+            padding: 1.5rem;
+        }
+
+        .card-header {
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
+        .card-subtitle {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        .card-body {
+            flex-grow: 1;
+        }
+
+        .comment-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .comment-user {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .card-footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: 8px;
+            border: 2px solid var(--border-color);
+            padding: 0.6rem 1rem;
+            transition: all var(--transition-speed) ease;
+        }
+        .form-control:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            outline: none;
+        }
+
+        .btn-send, .btn-filter {
+            background-color: var(--accent-color);
+            color: #fff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        .btn-send:hover, .btn-filter:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        /* PAGINATION STYLES */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .pagination-btn {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        .pagination-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+        .pagination-btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+            font-weight: 600;
+        }
+        .pagination-btn:disabled {
+            background-color: #f8f9fa;
+            color: #ccc;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+        }
+        .page-info {
+            margin: 0 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+        
+        #noResultsMessage {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+        }
+
+        /* RESPONSIVE STYLES */
+        @media (max-width: 992px) {
+            .navbar { padding: 0.75rem 1rem; }
+            .navbar-toggler { display: block; }
+            .navbar-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background-color: var(--navbar-bg); flex-direction: column; align-items: flex-start; padding: 1rem; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+            .navbar-links.active { display: flex; }
+            .navbar-links a { width: 100%; padding: 0.75rem 1rem; box-sizing: border-box; }
+            .page-container { padding: 1rem; }
+        }
+        
+        @media (max-width: 768px) {
+            .card-header, .card-body, .card-footer {
+                padding: 1rem;
+            }
+            .filter-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header th:replace="fragments/navbar :: navbar"></header>
+
+    <main class="page-container">
+        <h2 class="page-header">Comments</h2>
+
+        <!-- Filter Controls -->
+        <div class="filter-toolbar">
+            <input type="text" id="idFilterInput" class="form-control" placeholder="Filter by Ticket ID...">
+            <button id="filterBtn" class="btn-filter">Filter</button>
+        </div>
+
+        <div id="ticketGrid" class="row g-4">
+            <div th:each="ticket : ${tickets}" class="col-md-6 col-lg-4 ticket-container" th:attr="data-ticket-id=${ticket.id}">
+                <div class="ticket-card">
+                    <div class="card-header">
+                        <div>
+                            <h4 class="card-title" th:text="${ticket.title}">Ticket Title</h4>
+                            <p class="card-subtitle text-muted">
+                                ID:<span th:text="${ticket.id}">ID</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">
+                            <strong>Status:</strong> <span th:text="${ticket.status}"></span>
+                        </p>
+                        <p>
+                            <strong>Assigned To:</strong>
+                            <span th:text="${ticket.assignedTo != null ? ticket.assignedTo.name : 'Unassigned'}"></span>
+                        </p>
+                        <div class="comment-section">
+                            <h6 class="mb-3">Recent Comments</h6>
+                            <div th:each="comment : ${ticket.comments}" class="mb-2">
+                                <div>
+                                    <span class="comment-user" th:text="${comment.user != null ? comment.user.name : 'Unknown'}">User</span>:
+                                    <span th:text="${comment.message}">Comment message</span>
+                                </div>
+                                <div class="timestamp" th:text="${#temporals.format(comment.createdAt, 'dd MMM yyyy HH:mm')}">Date</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer">
+                        <form th:action="@{|/tickets/${ticket.id}/comments|}" method="post">
+                            <div class="input-group">
+                                <input type="text" class="form-control" name="message" placeholder="Write a comment..." required>
+                                <button class="btn-send" type="submit">Send</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="noResultsMessage" style="display: none;">
+            <p>No tickets found matching your criteria.</p>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container">
+            <!-- Pagination buttons will be dynamically inserted here -->
+        </div>
+    </main>
+
+    <script th:inline="javascript">
+        document.addEventListener('DOMContentLoaded', () => {
+            const allTicketElements = Array.from(document.querySelectorAll('.ticket-container'));
+            let filteredTickets = [...allTicketElements];
+            let currentPage = 1;
+            const ticketsPerPage = 6;
+
+            const filterInput = document.getElementById('idFilterInput');
+            const filterBtn = document.getElementById('filterBtn');
+            const ticketGrid = document.getElementById('ticketGrid');
+            const noResultsMessage = document.getElementById('noResultsMessage');
+
+            function displayCurrentPage() {
+                ticketGrid.innerHTML = ''; // Clear the grid
+                noResultsMessage.style.display = 'none';
+
+                if (filteredTickets.length === 0) {
+                    noResultsMessage.style.display = 'block';
+                    setupPagination(); // Still setup pagination to show it's empty
+                    return;
+                }
+
+                const startIndex = (currentPage - 1) * ticketsPerPage;
+                const endIndex = startIndex + ticketsPerPage;
+                const paginatedTickets = filteredTickets.slice(startIndex, endIndex);
+
+                paginatedTickets.forEach(card => {
+                    ticketGrid.appendChild(card);
+                });
+                
+                setupPagination();
+            }
+
+            function setupPagination() {
+                const paginationContainer = document.getElementById('paginationContainer');
+                paginationContainer.innerHTML = '';
+                const pageCount = Math.ceil(filteredTickets.length / ticketsPerPage);
+
+                if (pageCount <= 1) return;
+
+                const prevButton = document.createElement('button');
+                prevButton.innerText = 'Previous';
+                prevButton.className = 'pagination-btn';
+                prevButton.disabled = currentPage === 1;
+                prevButton.addEventListener('click', () => {
+                    if (currentPage > 1) {
+                        currentPage--;
+                        displayCurrentPage();
+                    }
+                });
+                paginationContainer.appendChild(prevButton);
+
+                const pageInfo = document.createElement('span');
+                pageInfo.className = 'page-info';
+                pageInfo.innerText = `Page ${currentPage} of ${pageCount}`;
+                paginationContainer.appendChild(pageInfo);
+
+                const nextButton = document.createElement('button');
+                nextButton.innerText = 'Next';
+                nextButton.className = 'pagination-btn';
+                nextButton.disabled = currentPage === pageCount;
+                nextButton.addEventListener('click', () => {
+                    if (currentPage < pageCount) {
+                        currentPage++;
+                        displayCurrentPage();
+                    }
+                });
+                paginationContainer.appendChild(nextButton);
+            }
+
+            function applyFilter() {
+                const filterValue = filterInput.value.trim().toLowerCase();
+                
+                if (!filterValue) {
+                    filteredTickets = [...allTicketElements];
+                } else {
+                    filteredTickets = allTicketElements.filter(card => {
+                        const ticketId = card.getAttribute('data-ticket-id');
+                        return ticketId.includes(filterValue);
+                    });
+                }
+                currentPage = 1;
+                displayCurrentPage();
+            }
+
+            filterBtn.addEventListener('click', applyFilter);
+            filterInput.addEventListener('keyup', (event) => {
+                if (event.key === 'Enter') {
+                    applyFilter();
+                }
+            });
+
+            // Initial display
+            displayCurrentPage();
+        });
+    </script>
+	<!-- JavaScript for the mobile menu toggle -->
+	   <script>
+	       document.addEventListener('DOMContentLoaded', () => {
+	           const navbarToggler = document.getElementById('navbarToggler');
+	           const navbarLinks = document.getElementById('navbarLinks');
+
+	           if (navbarToggler && navbarLinks) {
+	               navbarToggler.addEventListener('click', () => {
+	                   navbarLinks.classList.toggle('active');
+	               });
+	           }
+	       });
+	   </script>
+
+</body>
+</html>

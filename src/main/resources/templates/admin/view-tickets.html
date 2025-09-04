@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Manage Tickets</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- External Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+
+    <style>
+        /* ================================================================== */
+        /* CSS VARIABLES & BASE STYLES
+        /* ================================================================== */
+        :root {
+            --primary-bg: #f1f5f9;
+            --navbar-bg: #1e293b; 
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #2c3e50;
+            --status-breached: #ef4444;
+            --status-within-sla: #22c55e;
+            --priority-high: #ef4444;
+            --priority-medium: #f97316;
+            --priority-low: #3b82f6;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+            --transition-easing: ease-in-out;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ================================================================== */
+        /* NAVBAR STYLES
+        /* ================================================================== */
+        .navbar { background-color: var(--navbar-bg); padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-md); }
+        .navbar-brand { font-weight: 700; font-size: 1.25rem; color: #ffffff; }
+        .navbar-links { display: flex; align-items: center; gap: 0.5rem; }
+        .navbar-links a { color: #cbd5e1; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .navbar-links a:hover { background-color: #334155; color: #ffffff; }
+        .navbar-links a.logout-link { border: 1px solid var(--accent-color); color: var(--accent-color); }
+        .navbar-links a.logout-link:hover { background-color: var(--accent-color); color: #ffffff; }
+        .navbar-toggler { display: none; background: none; border: none; color: #ffffff; cursor: pointer; padding: 0.5rem; }
+
+        /* ================================================================== */
+        /* MANAGE TICKETS PAGE STYLES
+        /* ================================================================== */
+        .page-container { padding: 2rem; }
+        .page-header { text-align: center; margin-bottom: 2rem; font-size: 2rem; font-weight: 700; color: var(--text-primary); }
+
+        .controls-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        .filter-group {
+            display: flex;
+            flex-grow: 1;
+            gap: 1rem;
+        }
+        
+        /* ENHANCED BORDER & HOVER FOR CONTROLS */
+        .form-select, .btn {
+			font-size: medium;
+            border-radius: 10px;
+            border: 1px solid var(--border-color); /* Thicker border for better visibility */
+            transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+            background-color: var(--card-bg);
+            box-shadow: var(--shadow-sm);
+        }
+        .form-select:hover, .btn:hover {
+             border-color: var(--accent-color); /* Highlight border on hover */
+        }
+        .form-select:focus, .btn:focus {
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25); /* Glow effect on focus */
+            outline: none;
+        }
+        .btn-primary {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        .btn-primary:hover {
+            background-color: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        /* TICKET CARD STYLES */
+        .ticket-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ticket-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            /* Animation is handled by JS now to avoid flash on page change */
+            transition: transform var(--transition-speed) ease, 
+                        box-shadow var(--transition-speed) ease,
+                        border-color var(--transition-speed) ease;
+        }
+        
+        .ticket-card:hover {
+            transform: scale(1.03);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--accent-color);
+        }
+        
+        .ticket-card.breached { border-left: 8px solid var(--status-breached); }
+        .ticket-card.within-sla { border-left: 8px solid var(--status-within-sla); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: center; padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin: 0; }
+        .priority-badge { padding: 0.25rem 0.75rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; color: #fff; }
+        .priority-badge.High { background-color: var(--priority-high); }
+        .priority-badge.Medium { background-color: var(--priority-medium); }
+        .priority-badge.Low { background-color: var(--priority-low); }
+
+        .card-body { padding: 1.5rem; flex-grow: 1; }
+        .card-info { display: grid; grid-template-columns: max-content 1fr; gap: 0.75rem 1rem; align-items: center; }
+        .card-info label { font-weight: 500; color: var(--text-secondary); display: inline-flex; align-items: center; gap: 0.5rem; }
+        .card-info span { font-weight: 600; }
+        .card-info .bi { font-size: 1.1rem; }
+
+        .card-footer { padding: 1rem 1.5rem; background-color: #f8f9fa; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 1rem; }
+        .action-form { display: flex; gap: 0.5rem; }
+        
+        .action-form .btn {
+            transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+        }
+        .action-form .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* PAGINATION STYLES */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 0;
+        }
+        .pagination-btn {
+            background-color: var(--card-bg);
+            border: 2px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all var(--transition-speed) ease;
+        }
+        .pagination-btn:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+        }
+        .pagination-btn.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: #fff;
+            font-weight: 600;
+        }
+        .pagination-btn:disabled {
+            background-color: #f8f9fa;
+            color: #ccc;
+            cursor: not-allowed;
+            border-color: var(--border-color);
+        }
+        .page-info {
+            margin: 0 1rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* RESPONSIVE & ACCESSIBILITY STYLES */
+        @media (prefers-reduced-motion: reduce) {
+            .ticket-card, .action-form .btn {
+                transition: none;
+                animation: none;
+            }
+            .ticket-card:hover {
+                transform: none;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .navbar { padding: 0.75rem 1rem; }
+            .navbar-toggler { display: block; }
+            .navbar-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background-color: var(--navbar-bg); flex-direction: column; align-items: flex-start; padding: 1rem; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+            .navbar-links.active { display: flex; }
+            .navbar-links a { width: 100%; padding: 0.75rem 1rem; box-sizing: border-box; }
+            .page-container { padding: 1rem; }
+            .ticket-list { grid-template-columns: 1fr; }
+        }
+		@media (max-width: 768px) {
+		    .navbar { 
+		        padding: 0.75rem 1rem; 
+		    }
+		    .navbar-toggler { 
+		        display: block; 
+		    }
+		    .navbar-links { 
+		        display: none; 
+		        position: absolute; 
+		        top: 100%; 
+		        left: 0; 
+		        width: 100%; 
+		        background-color: var(--navbar-bg); 
+		        flex-direction: column; 
+		        align-items: flex-start; 
+		        padding: 1rem; 
+		        box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+		    }
+		    .navbar-links.active { 
+		        display: flex; 
+		    }
+		    .navbar-links a { 
+		        width: 100%; 
+		        padding: 0.75rem 1rem; 
+		        box-sizing: border-box; 
+		    }
+		    .page-container { 
+		        padding: 1rem; 
+		    }
+		    .ticket-list { 
+		        grid-template-columns: 1fr; 
+		    }
+		}
+    </style>
+</head>
+<body>
+    <header th:replace="fragments/navbar :: navbar"></header>
+
+    <main class="page-container">
+        <h2 class="page-header">Manage Tickets</h2>
+
+        <div class="controls-toolbar">
+            <div class="filter-group">
+                <select id="statusFilter" class="form-select" onchange="handleFilterChange()">
+                    <option value="">Filter by Status</option>
+                    <option>Open</option>
+                    <option>In Progress</option>
+                    <option>Escalated</option>
+                    <option>Resolved</option>
+                    <option>Closed</option>
+                </select>
+                <select id="priorityFilter" class="form-select" onchange="handleFilterChange()">
+                    <option value="">Filter by Priority</option>
+                    <option>Low</option>
+                    <option>Medium</option>
+                    <option>High</option>
+                </select>
+            </div>
+            <button id="sortBtn" class="btn btn-outline-primary" onclick="sortTickets()">Sort by SLA</button>
+        </div>
+
+        <div id="ticketList" class="ticket-list">
+            <div th:each="ticket : ${tickets}" class="ticket-card" tabindex="0"
+                 th:classappend="${ticket.slaStatus == 'Breached'} ? 'breached' : 'within-sla'"
+                 th:attr="data-status=${ticket.status}, data-priority=${ticket.priority}, data-sla=${ticket.slaStatus}">
+                
+                <div class="card-header">
+                    <h5 class="card-title" th:text="${ticket.title}"></h5>
+                    <span class="priority-badge" th:text="${ticket.priority}" th:classappend="${ticket.priority}"></span>
+                </div>
+
+                <div class="card-body">
+                    <div class="card-info">
+                        <label><i class="bi bi-ticket-perforated"></i> ID:</label> 
+                        <span th:text="${ticket.id}"></span>
+                        
+                        <label><i class="bi bi-bar-chart-line"></i> Status:</label> 
+                        <span th:text="${ticket.status}"></span>
+                        
+                        <label><i class="bi bi-clock-history"></i> SLA:</label> 
+                        <span th:text="${ticket.slaStatus}"></span>
+                        
+                        <label><i class="bi bi-person-circle"></i> Assigned To:</label>
+                        <span th:text="${ticket.assignedTo != null ? ticket.assignedTo.name : 'Unassigned'}"></span>
+                    </div>
+                </div>
+
+                <div class="card-footer">
+                    <form th:action="@{/admin/assign}" method="post" class="action-form">
+                        <input type="hidden" name="ticketId" th:value="${ticket.id}" />
+                        <select class="form-select form-select-sm" name="userId" required>
+                            <option value="" disabled selected>Assign to...</option>
+                            <option th:each="user : ${supportUsers}" th:value="${user.id}" th:text="${user.name}"></option>
+                        </select>
+                        <button type="submit" class="btn btn-success btn-sm">Assign</button>
+                    </form>
+
+                    <form th:action="@{/tickets/status}" method="post" class="action-form" target="dummyFrame" onsubmit="setTimeout(() => window.location.reload(), 300);">
+                        <input type="hidden" name="ticketId" th:value="${ticket.id}" />
+                        <select name="status" class="form-select form-select-sm" required>
+                            <option value="" disabled selected>Update status...</option>
+                            <option>Open</option>
+                            <option>In Progress</option>
+                            <option>Escalated</option>
+                            <option>Resolved</option>
+                            <option>Closed</option>
+                        </select>
+                        <button type="submit" class="btn btn-outline-dark btn-sm">Update</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container">
+            <!-- Pagination buttons will be dynamically inserted here -->
+        </div>
+    </main>
+    
+    <iframe name="dummyFrame" style="display:none;"></iframe>
+    
+    <script>
+        // --- State Management ---
+        let allTicketElements = [];
+        let filteredTickets = [];
+        let currentPage = 1;
+        const ticketsPerPage = 6;
+        let isSorted = false;
+
+        function displayCurrentPage() {
+            const ticketList = document.getElementById('ticketList');
+            ticketList.innerHTML = ''; // Clear the list
+
+            const startIndex = (currentPage - 1) * ticketsPerPage;
+            const endIndex = startIndex + ticketsPerPage;
+            const paginatedTickets = filteredTickets.slice(startIndex, endIndex);
+
+            paginatedTickets.forEach(card => {
+                ticketList.appendChild(card);
+            });
+
+            setupPagination();
+        }
+
+        function setupPagination() {
+            const paginationContainer = document.getElementById('paginationContainer');
+            paginationContainer.innerHTML = '';
+            const pageCount = Math.ceil(filteredTickets.length / ticketsPerPage);
+
+            if (pageCount <= 1) return;
+
+            const prevButton = document.createElement('button');
+            prevButton.innerText = 'Previous';
+            prevButton.className = 'pagination-btn';
+            prevButton.disabled = currentPage === 1;
+            prevButton.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    displayCurrentPage();
+                }
+            });
+            paginationContainer.appendChild(prevButton);
+
+            const pageInfo = document.createElement('span');
+            pageInfo.className = 'page-info';
+            pageInfo.innerText = `Page ${currentPage} of ${pageCount}`;
+            paginationContainer.appendChild(pageInfo);
+
+            const nextButton = document.createElement('button');
+            nextButton.innerText = 'Next';
+            nextButton.className = 'pagination-btn';
+            nextButton.disabled = currentPage === pageCount;
+            nextButton.addEventListener('click', () => {
+                if (currentPage < pageCount) {
+                    currentPage++;
+                    displayCurrentPage();
+                }
+            });
+            paginationContainer.appendChild(nextButton);
+        }
+
+        function applyFilters() {
+            const status = document.getElementById('statusFilter').value;
+            const priority = document.getElementById('priorityFilter').value;
+
+            filteredTickets = allTicketElements.filter(card => {
+                const tStatus = card.getAttribute('data-status');
+                const tPriority = card.getAttribute('data-priority');
+                const matchStatus = !status || tStatus === status;
+                const matchPriority = !priority || tPriority === priority;
+                return matchStatus && matchPriority;
+            });
+        }
+
+        function handleFilterChange() {
+            currentPage = 1;
+            applyFilters();
+            if (isSorted) {
+                sortTickets(false); // Re-apply sort to the new filtered list
+            } else {
+                displayCurrentPage();
+            }
+        }
+
+        function sortTickets(toggle = true) {
+            const btn = document.getElementById('sortBtn');
+            if (toggle) {
+                isSorted = !isSorted;
+            }
+
+            if (isSorted) {
+                filteredTickets.sort((a, b) => {
+                    const aSla = a.getAttribute('data-sla');
+                    const bSla = b.getAttribute('data-sla');
+                    const priority = sla => sla === 'Breached' ? 1 : 2;
+                    return priority(aSla) - priority(bSla);
+                });
+                btn.innerText = "Unsort";
+                btn.classList.add("btn-primary");
+                btn.classList.remove("btn-outline-primary");
+            } else {
+                applyFilters(); // Re-apply filters to get back to original filtered order
+                btn.innerText = "Sort by SLA";
+                btn.classList.add("btn-outline-primary");
+                btn.classList.remove("btn-primary");
+            }
+            currentPage = 1;
+            displayCurrentPage();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Store all server-rendered ticket elements
+            allTicketElements = Array.from(document.querySelectorAll('.ticket-card'));
+            filteredTickets = [...allTicketElements];
+            displayCurrentPage();
+        });
+		
+    </script>
+	<!-- JavaScript for the mobile menu toggle -->
+	  <script>
+	      document.addEventListener('DOMContentLoaded', () => {
+	          const navbarToggler = document.getElementById('navbarToggler');
+	          const navbarLinks = document.getElementById('navbarLinks');
+
+	          if (navbarToggler && navbarLinks) {
+	              navbarToggler.addEventListener('click', () => {
+	                  navbarLinks.classList.toggle('active');
+	              });
+	          }
+	      });
+	  </script>
+</body>
+</html>

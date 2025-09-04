@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Dashboard</title>
+    
+    <!-- External Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    /* ================================================================== */
+    /* CSS VARIABLES & BASE STYLES
+    /* This section defines the core design system for a cohesive and modern look.
+    /* ================================================================== */
+    :root {
+        --primary-bg: #f1f5f9;
+        /* A semi-transparent dark color for the glass effect */
+        --navbar-bg: rgba(30, 41, 59, 0.75); 
+        --text-light: #f8fafc;
+        --text-muted: #cbd5e1;
+        --accent-color: #3b82f6;
+        --accent-hover: #60a5fa;
+        --border-color: rgba(255, 255, 255, 0.1);
+        --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        --transition-speed: 0.3s;
+        --transition-easing: ease-in-out;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: var(--primary-bg);
+      /* Added for demonstration purposes to see the glass effect */
+      background-image:linear-gradient(135deg, #11998e, #38ef7d);
+      min-height: 200vh;
+    }
+
+    /* ================================================================== */
+    /* MODERN NAVBAR STYLES
+    /* A sticky, responsive navbar with a "frosted glass" effect.
+    /* ================================================================== */
+    .navbar { 
+        /* Glassmorphism effect */
+        background-color: var(--navbar-bg); 
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px); /* For Safari */
+        
+        padding: 0.75rem 2rem; 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        position: sticky; 
+        top: 0; 
+        z-index: 1000; 
+        border-bottom: 1px solid var(--border-color);
+    }
+    .navbar-brand { 
+        font-weight: 700; 
+        font-size: 1.25rem; 
+        color: var(--text-light); 
+        text-decoration: none; 
+    }
+    .navbar-links { 
+        display: flex; 
+        align-items: center; 
+        gap: 0.5rem; 
+    }
+    .navbar-links a { 
+        color: var(--text-muted); 
+        text-decoration: none; 
+        padding: 0.5rem 1rem; 
+        border-radius: 8px; 
+        font-weight: 500; 
+        transition: all var(--transition-speed) var(--transition-easing);
+    }
+    .navbar-links a:hover { 
+        background-color: rgba(255, 255, 255, 0.1); 
+        color: var(--text-light);
+        transform: translateY(-2px);
+    }
+    .navbar-links a.logout-link { 
+        border: 1px solid var(--accent-color); 
+        color: var(--accent-color); 
+    }
+    .navbar-links a.logout-link:hover { 
+        background-color: var(--accent-color); 
+        color: var(--text-light); 
+    }
+    .navbar-toggler { 
+        display: none; 
+        background: none; 
+        border: none; 
+        color: var(--text-light); 
+        cursor: pointer; 
+        padding: 0.5rem; 
+        font-size: 1.75rem; 
+    }
+
+    /* ================================================================== */
+    /* RESPONSIVE STYLES
+    /* Media queries for tablets and mobile devices.
+    /* ================================================================== */
+    @media (max-width: 768px) {
+        .navbar { padding: 0.75rem 1rem; }
+        .navbar-toggler { display: block; }
+        .navbar-links { 
+            display: none; 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            width: 100%; 
+            background-color: var(--navbar-bg); 
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            flex-direction: column; 
+            align-items: flex-start; 
+            padding: 1rem; 
+            border-top: 1px solid var(--border-color);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+        }
+        .navbar-links.active { 
+            display: flex; 
+        }
+        .navbar-links a { 
+            width: 100%; 
+            padding: 0.75rem 1rem; 
+            box-sizing: border-box; 
+        }
+    }
+	@media (max-width: 992px) {
+	    .navbar { 
+	        padding: 0.75rem 1rem; 
+	    }
+	    .navbar-toggler { 
+	        display: block; 
+	    }
+	    .navbar-links { 
+	        display: none; 
+	        position: absolute; 
+	        top: 100%; 
+	        left: 0; 
+	        width: 100%; 
+	        background-color: var(--navbar-bg); 
+	        backdrop-filter: blur(10px);
+	        -webkit-backdrop-filter: blur(10px);
+	        flex-direction: column; 
+	        align-items: flex-start; 
+	        padding: 1rem; 
+	        border-top: 1px solid var(--border-color);
+	        box-shadow: 0 8px 16px rgba(0,0,0,0.2); 
+	    }
+	    .navbar-links.active { 
+	        display: flex; 
+	    }
+	    .navbar-links a { 
+	        width: 100%; 
+	        padding: 0.75rem 1rem; 
+	        box-sizing: border-box; 
+	    }
+	}
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <a href="/user/dashboard" th:href="@{/user/dashboard}" class="navbar-brand">Helpdesk</a>
+    
+    <!-- Mobile Menu Toggle Button -->
+    <button class="navbar-toggler" id="navbarToggler" aria-label="Toggle navigation">
+        <i class="bi bi-list"></i>
+    </button>
+    
+    <div class="navbar-links" id="navbarLinks">
+        <a href="/user/dashboard" th:href="@{/user/dashboard}">Dashboard</a>
+        <a href="/user/create-ticket" th:href="@{/user/create-ticket}">Create Ticket</a>
+        <a href="/profile" th:href="@{/profile}">Profile</a>
+        <a href="/logout" th:href="@{/logout}" class="logout-link">Logout</a>
+    </div>
+  </nav>
+
+  
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const navbarToggler = document.getElementById('navbarToggler');
+        const navbarLinks = document.getElementById('navbarLinks');
+
+        if (navbarToggler && navbarLinks) {
+            navbarToggler.addEventListener('click', () => {
+                navbarLinks.classList.toggle('active');
+            });
+        }
+    });
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+    <!-- 
+      This fragment contains the navbar's HTML structure, now including
+      a toggle button for mobile view.
+    -->
+    <th:block th:fragment="navbar">
+        <nav class="navbar">
+            <div class="navbar-brand">Admin Panel</div>
+            <!-- Mobile Menu Toggle Button -->
+            <button class="navbar-toggler" id="navbarToggler" aria-label="Toggle navigation">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+            </button>
+            <div class="navbar-links" id="navbarLinks">
+                <a th:href="@{/admin/dashboard}">Dashboard</a>
+                <a th:href="@{/admin/tickets}">Manage Tickets</a>
+                <a th:href="@{/tickets/create}">Create Ticket</a>
+                <a th:href="@{/admin/manage-users}">Manage Users</a>
+                <a th:href="@{/tickets/ticket-view}">Comments</a>
+                <a th:href="@{/admin/analytics}">Analytics</a>
+                <a th:href="@{/logout}" class="logout-link">Logout</a>
+            </div>
+        </nav>
+    </th:block>
+</body>
+</html>

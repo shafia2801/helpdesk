@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Create Ticket</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- External Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        /* ================================================================== */
+        /* CSS VARIABLES & BASE STYLES
+        /* ================================================================== */
+        :root {
+            --primary-bg: #f1f5f9;
+            --navbar-bg: #1e293b; 
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --border-color: #2c3e50;
+            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --transition-speed: 0.3s;
+            --transition-easing: ease-in-out;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background-color: var(--primary-bg);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* ================================================================== */
+        /* NAVBAR STYLES
+        /* ================================================================== */
+        .navbar { background-color: var(--navbar-bg); padding: 0.75rem 2rem; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-md); }
+        .navbar-brand { font-weight: 700; font-size: 1.25rem; color: #ffffff; }
+        .navbar-links { display: flex; align-items: center; gap: 0.5rem; }
+        .navbar-links a { color: #cbd5e1; text-decoration: none; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; transition: background-color 0.2s ease, color 0.2s ease; }
+        .navbar-links a:hover { background-color: #334155; color: #ffffff; }
+        .navbar-links a.logout-link { border: 1px solid var(--accent-color); color: var(--accent-color); }
+        .navbar-links a.logout-link:hover { background-color: var(--accent-color); color: #ffffff; }
+        .navbar-toggler { display: none; background: none; border: none; color: #ffffff; cursor: pointer; padding: 0.5rem; }
+
+        /* CREATE TICKET PAGE STYLES */
+        .ticket-card {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+             border: 1px solid var(--border-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease-in-out;
+        }
+        .ticket-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            border-color: #3498db;
+        }
+        h2 {
+            color: #34495e;
+            font-weight: 600;
+        }
+        label {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3498db;
+            box-shadow: 0 0 6px rgba(52, 152, 219, 0.4);
+        }
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+            font-weight: 500;
+            border-radius: 8px;
+            padding: 10px 18px;
+            transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+        }
+        .btn-primary:hover {
+            background-color: #2c81ba;
+            border-color: #2c81ba;
+            transform: translateY(-2px);
+        }
+        .due-date-box {
+            background-color: #f4f6f8;
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 14px;
+            color: #2d3436;
+            border: 1px solid #ddd;
+        }
+
+        /* RESPONSIVE STYLES */
+        @media (max-width: 992px) {
+            .navbar { padding: 0.75rem 1rem; }
+            .navbar-toggler { display: block; }
+            .navbar-links { display: none; position: absolute; top: 100%; left: 0; width: 100%; background-color: var(--navbar-bg); flex-direction: column; align-items: flex-start; padding: 1rem; box-shadow: 0 8px 16px rgba(0,0,0,0.2); }
+            .navbar-links.active { display: flex; }
+            .navbar-links a { width: 100%; padding: 0.75rem 1rem; box-sizing: border-box; }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            .ticket-card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <header th:replace="fragments/navbar :: navbar"></header>
+
+    <div class="container mt-5">
+        <div class="ticket-card">
+            <h2 class="mb-4 text-center"> <i class="bi bi-pencil-square"></i> Create New Ticket</h2>
+            <form th:action="@{/tickets/create}" th:object="${ticket}" method="post">
+
+                <div class="mb-3">
+                    <label class="form-label">Title:</label>
+                    <input type="text" class="form-control" th:field="*{title}" placeholder="Enter ticket title" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Description:</label>
+                    <textarea class="form-control" th:field="*{description}" rows="4" placeholder="Describe the issue" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Priority:</label>
+                    <select class="form-select" th:field="*{priority}">
+                        <option value="Low">Low</option>
+                        <option value="Medium" selected>Medium</option>
+                        <option value="High">High</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Status:</label>
+                    <select class="form-select" th:field="*{status}">
+                        <option value="Open">Open</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+
+                <input type="hidden" th:field="*{dueDate}" />
+
+                <div class="mb-3" th:if="${ticket.dueDate != null}">
+                    <label class="form-label">Calculated Due Date:</label>
+                    <div class="due-date-box" th:text="${#dates.format(ticket.dueDate, 'yyyy-MM-dd HH:mm')}"></div>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary w-100">Submit Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+	<!-- JavaScript for the mobile menu toggle -->
+	  <script>
+	      document.addEventListener('DOMContentLoaded', () => {
+	          const navbarToggler = document.getElementById('navbarToggler');
+	          const navbarLinks = document.getElementById('navbarLinks');
+
+	          if (navbarToggler && navbarLinks) {
+	              navbarToggler.addEventListener('click', () => {
+	                  navbarLinks.classList.toggle('active');
+	              });
+	          }
+	      });
+	  </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
