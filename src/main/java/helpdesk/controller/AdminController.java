@@ -41,7 +41,7 @@ model.addAttribute("resolvedTickets", ticketRepo.countByStatus("Resolved"));
     @GetMapping("/tickets")
     public String viewAllTickets(Model model) {
         model.addAttribute("tickets", ticketRepo.findAll());
-        model.addAttribute("supportUsers", userRepo.findAllByRole("Support"));
+        model.addAttribute("supportUsers", userRepo.findAllByRole("SUPPORT"));
         return "admin/view-tickets";
     }
 
