@@ -31,7 +31,7 @@ public class AuthController {
     // Helper to send verification email
     private void sendVerificationEmail(String toEmail, String token) {
         String subject = "Please Verify Your Email";
-        String verificationUrl = "http://localhost:8080/verify-email?token=" + token;
+        String verificationUrl = "https://it-helpdesk-sl42.onrender.com/verify-email?token=" + token;
 
         String message = "Click this link to verify your email:\n\n" + verificationUrl;
 
